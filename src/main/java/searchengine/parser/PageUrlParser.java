@@ -9,6 +9,7 @@ import searchengine.utils.RandomUserAgent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 
@@ -17,6 +18,7 @@ public class PageUrlParser extends RecursiveTask<List<PageDto>> {
     private final String url;
     private final List<String> urlList;
     private final List<PageDto> pageDtoList;
+    private static final Set<String> EXCLUDED_EXTENSIONS = Set.of(".pdf", ".jpg", ".JPG", ".png", "#");
 
     public PageUrlParser(String url, List<PageDto> pageDtoList, List<String> urlList) {
         this.url = url;
@@ -58,13 +60,10 @@ public class PageUrlParser extends RecursiveTask<List<PageDto>> {
     }
 
     private boolean checkLink(Element element, String link) {
-        return link.startsWith(element.baseUri())
-                && !link.equals(element.baseUri())
-                && !link.contains("#")
-                && !link.contains(".pdf")
-                && !link.contains(".jpg")
-                && !link.contains(".JPG")
-                && !link.contains(".png")
+        var baseUri = element.baseUri();
+        return link.startsWith(baseUri)
+                && !link.equals(baseUri)
+                && EXCLUDED_EXTENSIONS.stream().noneMatch(link::contains)
                 && !urlList.contains(link);
     }
 

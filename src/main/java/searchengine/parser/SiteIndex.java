@@ -81,7 +81,7 @@ public class SiteIndex implements Runnable {
     private void getLemmasFromPages() throws InterruptedException {
         if (!Thread.interrupted()) {
             var site = siteRepository.findByUrl(url);
-            log.info("сайт найден: " + site.toString());
+            log.info("сайт найден: " + site);
             site.setStatusTime(LocalDateTime.now());
             lemmaParser.run(site);
             List<LemmaDto> lemmaDtoList = new CopyOnWriteArrayList<>(lemmaParser.getLemmaDtoList());
@@ -128,20 +128,18 @@ public class SiteIndex implements Runnable {
                 pageList.add(new Page(pageFormat, page.statusCode(), page.htmlCode(), site));
             }
             pageRepository.saveAll(pageList);
-            log.info("записи сохранены");
+            log.info("список страниц сохранен");
         } else {
-            log.error("не удалось сохранить");
+            log.error("не удалось сохранить список страниц");
             throw new InterruptedException();
         }
     }
 
     private String getName() {
-        var urlList = sitesList.getSites();
-        for (searchengine.config.Site site : urlList) {
-            if (site.getUrl().equals(url)) {
-                return site.getName();
-            }
-        }
-        return "";
+        return sitesList.getSites().stream()
+                .filter(site -> site.getUrl().equalsIgnoreCase(url))
+                .map(searchengine.config.Site::getName)
+                .findFirst()
+                .orElse("");
     }
 }

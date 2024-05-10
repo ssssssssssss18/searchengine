@@ -37,30 +37,10 @@ public class IndexServiceImpl implements IndexService {
             return false;
         } else {
             executorService = Executors.newFixedThreadPool(processorCoreCount);
-            sitesList.getSites().forEach(
-                    site -> executorService.submit(
-                            new SiteIndex(
-                                    pageRepository,
-                                    lemmaParser,
-                                    lemmaRepository,
-                                    indexParser,
-                                    indexRepository,
-                                    siteRepository,
-                                    site.getUrl(),
-                                    sitesList)));
+            sitesList.getSites().forEach(site -> executorService.submit(createSiteIndexInstance(site.getUrl())));
             executorService.shutdown();
             return true;
         }
-    }
-
-    private boolean isIndexingActive() {
-        return siteRepository.findAll().stream()
-                .anyMatch(site -> site.getStatus() == Status.INDEXING);
-    }
-
-    private boolean urlCheck(String url) {
-        return sitesList.getSites().stream()
-                .anyMatch(site -> site.getUrl().equalsIgnoreCase(url));
     }
 
     @Override
@@ -78,20 +58,33 @@ public class IndexServiceImpl implements IndexService {
     public boolean indexPage(String url) {
         if (urlCheck(url)) {
             executorService = Executors.newFixedThreadPool(processorCoreCount);
-            executorService.submit(
-                    new SiteIndex(
-                            pageRepository,
-                            lemmaParser,
-                            lemmaRepository,
-                            indexParser,
-                            indexRepository,
-                            siteRepository,
-                            url,
-                            sitesList));
+            executorService.submit(createSiteIndexInstance(url));
             executorService.shutdown();
             return true;
         } else {
             return false;
         }
+    }
+
+    private SiteIndex createSiteIndexInstance(String url) {
+        return new SiteIndex(
+                pageRepository,
+                lemmaParser,
+                lemmaRepository,
+                indexParser,
+                indexRepository,
+                siteRepository,
+                url,
+                sitesList);
+    }
+
+    private boolean isIndexingActive() {
+        return siteRepository.findAll().stream()
+                .anyMatch(site -> site.getStatus() == Status.INDEXING);
+    }
+
+    private boolean urlCheck(String url) {
+        return sitesList.getSites().stream()
+                .anyMatch(site -> site.getUrl().equalsIgnoreCase(url));
     }
 }

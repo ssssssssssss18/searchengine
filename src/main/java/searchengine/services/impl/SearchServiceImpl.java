@@ -85,8 +85,12 @@ public class SearchServiceImpl implements SearchService {
                     result.add(dataList.get(i));
                 }
                 return result;
-            } else return dataList;
-        } else return result;
+            } else {
+                return dataList;
+            }
+        } else {
+            return result;
+        }
     }
 
     private String getSnippet(String content, List<String> lemmaList) {
@@ -132,10 +136,14 @@ public class SearchServiceImpl implements SearchService {
         int lastPoint;
         if (content.lastIndexOf(" ", start) != -1) {
             prevPoint = content.lastIndexOf(" ", start);
-        } else prevPoint = start;
+        } else {
+            prevPoint = start;
+        }
         if (content.indexOf(" ", end + 30) != -1) {
             lastPoint = content.indexOf(" ", end + 30);
-        } else lastPoint = content.indexOf(" ", end);
+        } else {
+            lastPoint = content.indexOf(" ", end);
+        }
         String text = content.substring(prevPoint, lastPoint);
         try {
             text = text.replaceAll(word, "<b>" + word + "</b>");
