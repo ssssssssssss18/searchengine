@@ -17,7 +17,7 @@ public class StatisticController {
 
     @GetMapping("/statistics")
     public ResponseEntity<Object> getStatistic() {
-        var statistic = statisticService.getStatistics();
-        return new ResponseEntity<>(new StatisticResponse(true, statistic), HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new StatisticResponse(true, statisticService.getStatistics()));
     }
 }

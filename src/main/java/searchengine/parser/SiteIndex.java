@@ -25,8 +25,7 @@ import java.util.concurrent.ForkJoinPool;
 @Slf4j
 @RequiredArgsConstructor
 public class SiteIndex implements Runnable {
-
-    private static final int processorCoreCount = 10;
+    private static final int processorCoreCount = Runtime.getRuntime().availableProcessors();
     private final PageRepository pageRepository;
     private final LemmaParser lemmaParser;
     private final LemmaRepository lemmaRepository;
@@ -67,11 +66,11 @@ public class SiteIndex implements Runnable {
 
     private List<PageDto> getPageDtoList() throws InterruptedException {
         if (!Thread.interrupted()) {
-            var urlFormat = url + "/";
+            String urlFormat = url + "/";
             List<PageDto> pageDtoVector = new Vector<>();
             List<String> urlList = new Vector<>();
-            var forkJoinPool = new ForkJoinPool(processorCoreCount);
-            var pageUrlParser = new PageUrlParser(urlFormat, pageDtoVector, urlList);
+            ForkJoinPool forkJoinPool = new ForkJoinPool(processorCoreCount);
+            PageUrlParser pageUrlParser = new PageUrlParser(urlFormat, pageDtoVector, urlList);
             var pages = forkJoinPool.invoke(pageUrlParser);
             return new CopyOnWriteArrayList<>(pages);
         } else {

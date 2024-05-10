@@ -20,30 +20,25 @@ public class IndexController {
 
     @GetMapping("/startIndexing")
     public ResponseEntity<Object> startIndexing() {
-        if (indexService.startIndexing()) {
-            return new ResponseEntity<>(new TrueResponse(true), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new FalseResponse(false, "Индексация уже запущена"),
-                    HttpStatus.METHOD_NOT_ALLOWED);
-        }
+        var startIndexing = indexService.startIndexing();
+        return ResponseEntity.status(startIndexing ? HttpStatus.OK : HttpStatus.METHOD_NOT_ALLOWED)
+                .body(startIndexing ? new TrueResponse(true) :
+                        new FalseResponse(false, "Индексация уже запущена"));
     }
 
     @GetMapping("/stopIndexing")
     public ResponseEntity<Object> stopIndexing() {
-        if (indexService.stopIndexing()) {
-            return new ResponseEntity<>(new TrueResponse(true), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(new FalseResponse(false, "Индексация не запущена"),
-                    HttpStatus.METHOD_NOT_ALLOWED);
-        }
+        var stopIndexing = indexService.stopIndexing();
+        return ResponseEntity.status(stopIndexing ? HttpStatus.OK : HttpStatus.METHOD_NOT_ALLOWED)
+                .body(stopIndexing ? new TrueResponse(true) :
+                        new FalseResponse(false, "Индексация не запущена"));
     }
 
     @PostMapping("/indexPage")
-    public ResponseEntity<Object> startIndexingOne(String url) {
-        if (indexService.indexUrl(url)) {
-            return new ResponseEntity<>(new TrueResponse(true), HttpStatus.OK);
-        } else return new ResponseEntity<>(new FalseResponse(false,
-                "Данная страница находится за пределами сайтов"),
-                HttpStatus.METHOD_NOT_ALLOWED);
+    public ResponseEntity<Object> indexPage(String url) {
+        var indexPage = indexService.indexPage(url);
+        return ResponseEntity.status(indexPage ? HttpStatus.OK : HttpStatus.METHOD_NOT_ALLOWED)
+                .body(indexPage ? new TrueResponse(true) :
+                        new FalseResponse(false, "Данная страница находится за пределами сайтов"));
     }
 }

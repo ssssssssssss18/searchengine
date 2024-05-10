@@ -11,7 +11,6 @@ import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 import searchengine.services.StatisticsService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -46,12 +45,8 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     private List<Detailed> getDetailedList() {
-        var siteList = siteRepository.findAll();
-        List<Detailed> result = new ArrayList<>();
-        for (Site site : siteList) {
-            Detailed detailed = getDetailed(site);
-            result.add(detailed);
-        }
-        return result;
+        return siteRepository.findAll().stream()
+                .map(this::getDetailed)
+                .toList();
     }
 }

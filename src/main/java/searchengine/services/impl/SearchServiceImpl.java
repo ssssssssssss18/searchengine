@@ -70,10 +70,7 @@ public class SearchServiceImpl implements SearchService {
         return getSearchDtoList(foundLemmaList, textLemmaList, offset, limit);
     }
 
-    private List<SearchDto> getSearchDtoList(List<Lemma> lemmaList,
-                                             List<String> textLemmaList,
-                                             int offset,
-                                             int limit) {
+    private List<SearchDto> getSearchDtoList(List<Lemma> lemmaList, List<String> textLemmaList, int offset, int limit) {
         List<SearchDto> result = new ArrayList<>();
         if (lemmaList.size() >= textLemmaList.size()) {
             var foundPageList = pageRepository.findByLemmaList(lemmaList);
@@ -115,7 +112,9 @@ public class SearchServiceImpl implements SearchService {
             int start = lemmaIndex.get(i);
             int end = content.indexOf(" ", start);
             int nextPoint = i + 1;
-            while (nextPoint < lemmaIndex.size() && lemmaIndex.get(nextPoint) - end > 0 && lemmaIndex.get(nextPoint) - end < 5) {
+            while (nextPoint < lemmaIndex.size()
+                    && lemmaIndex.get(nextPoint) - end > 0
+                    && lemmaIndex.get(nextPoint) - end < 5) {
                 end = content.indexOf(" ", lemmaIndex.get(nextPoint));
                 nextPoint += 1;
             }
@@ -148,24 +147,18 @@ public class SearchServiceImpl implements SearchService {
 
     private List<Lemma> getLemmaListFromSite(List<String> lemmas, Site site) {
         var lemmaList = lemmaRepository.findLemmaListBySite(lemmas, site);
-
         List<Lemma> result = new ArrayList<>(lemmaList);
-
         result.sort(Comparator.comparingInt(Lemma::getFrequency));
-
         return result;
     }
 
     private List<String> getLemmaFromText(String searchText) {
         var elements = searchText.toLowerCase(Locale.ROOT).split("\\s+");
-
         List<String> lemmas = new ArrayList<>();
-
         for (String el : elements) {
             var lemmaWord = morphology.getLemma(el);
             lemmas.addAll(lemmaWord);
         }
-
         return lemmas;
     }
 
@@ -201,7 +194,6 @@ public class SearchServiceImpl implements SearchService {
             var site = pageSite.getUrl();
             var siteName = pageSite.getName();
             var absRelevance = pageList.get(page);
-
 
             StringBuilder clearContent = new StringBuilder();
             var title = ClearHtmlCode.clear(content, fieldList.get(0).getSelector());

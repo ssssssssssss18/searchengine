@@ -8,9 +8,11 @@ import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 @Component
 public class LuceneMorphology implements Morphology {
@@ -18,6 +20,8 @@ public class LuceneMorphology implements Morphology {
     private final static String regex = "\\p{Punct}|[0-9]|@|©|◄|»|«|—|-|№|…";
     private final static Logger logger = LogManager.getLogger(LuceneMorphology.class);
     private final static Marker INVALID_SYMBOL_MARKER = MarkerManager.getMarker("INVALID_SYMBOL");
+    private static final Set<String> SERVICE_PARTS_OF_SPEECH = Set.of("ПРЕДЛ", "СОЮЗ", "МЕЖД", "МС", "ЧАСТ");
+    private static final int MAX_LENGTH = 3;
 
     static {
         try {
@@ -29,18 +33,13 @@ public class LuceneMorphology implements Morphology {
 
     @Override
     public HashMap<String, Integer> getLemmaList(String content) {
-        content = content.toLowerCase(Locale.ROOT)
-                .replaceAll(regex, " ");
-        HashMap<String, Integer> lemmaList = new HashMap<>();
-        var elements = content.split("\\s+");
-        for (String el : elements) {
-            var wordsList = getLemma(el);
-            for (String word : wordsList) {
-                int count = lemmaList.getOrDefault(word, 0);
-                lemmaList.put(word, count + 1);
-            }
-        }
-        return lemmaList;
+        content = content.toLowerCase(Locale.ROOT).replaceAll(regex, " ");
+
+        return Arrays.stream(content.split("\\s+"))
+                .flatMap(element -> getLemma(element).stream())
+                .collect(HashMap::new,
+                        (map, word) -> map.merge(word, 1, Integer::sum),
+                        HashMap::putAll);
     }
 
     @Override
@@ -75,17 +74,8 @@ public class LuceneMorphology implements Morphology {
     }
 
     private boolean isServiceWord(String word) {
-        var morphForm = russianMorph.getMorphInfo(word);
-        for (String l : morphForm) {
-            if (l.contains("ПРЕДЛ")
-                    || l.contains("СОЮЗ")
-                    || l.contains("МЕЖД")
-                    || l.contains("МС")
-                    || l.contains("ЧАСТ")
-                    || l.length() <= 3) {
-                return true;
-            }
-        }
-        return false;
+        return russianMorph.getMorphInfo(word).stream()
+                .anyMatch(morphInfo -> SERVICE_PARTS_OF_SPEECH.contains(morphInfo)
+                        || morphInfo.length() <= MAX_LENGTH);
     }
 }

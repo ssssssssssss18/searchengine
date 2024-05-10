@@ -30,22 +30,22 @@ public class SearchController {
             @RequestParam(name = "offset", required = false, defaultValue = "0") int offset,
             @RequestParam(name = "limit", required = false, defaultValue = "20") int limit) {
         if (query.isEmpty()) {
-            return new ResponseEntity<>(new FalseResponse(false, "Задан пустой поисковый запрос"),
-                    HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new FalseResponse(false, "Задан пустой поисковый запрос"));
         } else {
             List<SearchDto> searchData;
             if (!site.isEmpty()) {
                 if (siteRepository.findByUrl(site) == null) {
-                    return new ResponseEntity<>(new FalseResponse(false, "Указанная страница не найдена"),
-                            HttpStatus.BAD_REQUEST);
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(new FalseResponse(false, "Указанная страница не найдена"));
                 } else {
                     searchData = searchService.siteSearch(query, site, offset, limit);
                 }
             } else {
                 searchData = searchService.allSiteSearch(query, offset, limit);
             }
-            return new ResponseEntity<>(new SearchResponse(true, searchData.size(), searchData),
-                    HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new SearchResponse(true, searchData.size(), searchData));
         }
     }
 }

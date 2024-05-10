@@ -1,6 +1,7 @@
 package searchengine.services.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import searchengine.config.SitesList;
 import searchengine.model.Status;
@@ -16,6 +17,7 @@ import searchengine.services.IndexService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class IndexServiceImpl implements IndexService {
@@ -63,11 +65,17 @@ public class IndexServiceImpl implements IndexService {
 
     @Override
     public boolean stopIndexing() {
-        return isIndexingActive();
+        if (isIndexingActive()) {
+            log.info("Останавливаем индексацию");
+            executorService.shutdownNow();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public boolean indexUrl(String url) {
+    public boolean indexPage(String url) {
         if (urlCheck(url)) {
             executorService = Executors.newFixedThreadPool(processorCoreCount);
             executorService.submit(
