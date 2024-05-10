@@ -6,5 +6,5 @@ public interface IndexService {
 
     boolean stopIndexing();
 
-    void indexPage();
+    boolean indexUrl(String url);
 }

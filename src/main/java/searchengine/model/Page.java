@@ -17,12 +17,15 @@ import java.util.List;
 @Getter
 @Setter
 public class Page extends AbstractEntity {
+
     private String path;
 
     @Column(name = "status_code")
     private int statusCode;
-    @Column
+
+    @Column(columnDefinition = "TEXT")
     private String content;
+
     @ManyToOne
     @JoinColumn(name = "site_id")
     private Site site;
