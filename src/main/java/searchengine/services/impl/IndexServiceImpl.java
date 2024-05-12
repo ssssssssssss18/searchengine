@@ -3,7 +3,7 @@ package searchengine.services.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import searchengine.config.SitesList;
+import searchengine.config.SiteConfigList;
 import searchengine.model.Status;
 import searchengine.parser.IndexParser;
 import searchengine.parser.LemmaParser;
@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 public class IndexServiceImpl implements IndexService {
     private static final int processorCoreCount = Runtime.getRuntime().availableProcessors();
-    private final SitesList sitesList;
+    private final SiteConfigList siteConfigList;
     private final SiteRepository siteRepository;
     private ExecutorService executorService;
     private final PageRepository pageRepository;
@@ -37,7 +37,7 @@ public class IndexServiceImpl implements IndexService {
             return false;
         } else {
             executorService = Executors.newFixedThreadPool(processorCoreCount);
-            sitesList.getSites().forEach(site -> executorService.submit(createSiteIndexInstance(site.getUrl())));
+            siteConfigList.getSites().forEach(site -> executorService.submit(createSiteIndexInstance(site.getUrl())));
             executorService.shutdown();
             return true;
         }
@@ -47,6 +47,7 @@ public class IndexServiceImpl implements IndexService {
     public boolean stopIndexing() {
         if (isIndexingActive()) {
             log.info("Останавливаем индексацию");
+            executorService = Executors.newFixedThreadPool(processorCoreCount);
             executorService.shutdownNow();
             return true;
         } else {
@@ -68,14 +69,9 @@ public class IndexServiceImpl implements IndexService {
 
     private SiteIndex createSiteIndexInstance(String url) {
         return new SiteIndex(
-                pageRepository,
-                lemmaParser,
-                lemmaRepository,
-                indexParser,
-                indexRepository,
-                siteRepository,
-                url,
-                sitesList);
+                pageRepository, lemmaParser, lemmaRepository, indexParser,
+                indexRepository, siteRepository, url, siteConfigList
+        );
     }
 
     private boolean isIndexingActive() {
@@ -84,7 +80,7 @@ public class IndexServiceImpl implements IndexService {
     }
 
     private boolean urlCheck(String url) {
-        return sitesList.getSites().stream()
+        return siteConfigList.getSites().stream()
                 .anyMatch(site -> site.getUrl().equalsIgnoreCase(url));
     }
 }

@@ -18,6 +18,6 @@ public class StatisticController {
     @GetMapping("/statistics")
     public ResponseEntity<Object> getStatistic() {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new StatisticResponse(true, statisticService.getStatistics()));
+                .body(new StatisticResponse(true, statisticService.getStatistic()));
     }
 }

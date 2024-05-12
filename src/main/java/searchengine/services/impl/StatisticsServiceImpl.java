@@ -21,7 +21,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     private final LemmaRepository lemmaRepository;
 
     @Override
-    public Statistics getStatistics() {
+    public Statistics getStatistic() {
         var total = getTotal();
         var detailed = getDetailedList();
         return new Statistics(total, detailed);

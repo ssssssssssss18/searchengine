@@ -4,5 +4,5 @@ import searchengine.dto.statistics.Statistics;
 
 public interface StatisticsService {
 
-    Statistics getStatistics();
+    Statistics getStatistic();
 }

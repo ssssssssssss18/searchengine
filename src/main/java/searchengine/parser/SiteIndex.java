@@ -2,7 +2,8 @@ package searchengine.parser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import searchengine.config.SitesList;
+import searchengine.config.SiteConfig;
+import searchengine.config.SiteConfigList;
 import searchengine.dto.IndexDto;
 import searchengine.dto.LemmaDto;
 import searchengine.dto.PageDto;
@@ -33,7 +34,7 @@ public class SiteIndex implements Runnable {
     private final IndexRepository indexRepository;
     private final SiteRepository siteRepository;
     private final String url;
-    private final SitesList sitesList;
+    private final SiteConfigList siteConfigList;
 
     @Override
     public void run() {
@@ -136,9 +137,9 @@ public class SiteIndex implements Runnable {
     }
 
     private String getName() {
-        return sitesList.getSites().stream()
+        return siteConfigList.getSites().stream()
                 .filter(site -> site.getUrl().equalsIgnoreCase(url))
-                .map(searchengine.config.Site::getName)
+                .map(SiteConfig::getName)
                 .findFirst()
                 .orElse("");
     }
