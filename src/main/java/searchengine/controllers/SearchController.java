@@ -35,14 +35,14 @@ public class SearchController {
         } else {
             List<SearchDto> searchData;
             if (!site.isEmpty()) {
-                if (siteRepository.findByUrl(site) == null) {
+                if (siteRepository.getSiteByUrl(site) == null) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                             .body(new FalseResponse(false, "Указанная страница не найдена"));
                 } else {
                     searchData = searchService.siteSearch(query, site, offset, limit);
                 }
             } else {
-                searchData = searchService.allSiteSearch(query, offset, limit);
+                searchData = searchService.searchAllSites(query, offset, limit);
             }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new SearchResponse(true, searchData.size(), searchData));

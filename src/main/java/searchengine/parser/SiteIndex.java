@@ -38,9 +38,9 @@ public class SiteIndex implements Runnable {
 
     @Override
     public void run() {
-        if (siteRepository.findByUrl(url) != null) {
+        if (siteRepository.getSiteByUrl(url) != null) {
             log.info("Начато удаление данных - " + url);
-            var site = siteRepository.findByUrl(url);
+            var site = siteRepository.getSiteByUrl(url);
             siteRepository.delete(site);
         }
         log.info("Начата индексация - " + url);
@@ -81,7 +81,7 @@ public class SiteIndex implements Runnable {
 
     private void getLemmasFromPages() throws InterruptedException {
         if (!Thread.interrupted()) {
-            var site = siteRepository.findByUrl(url);
+            var site = siteRepository.getSiteByUrl(url);
             log.info("сайт найден: " + site);
             site.setStatusTime(LocalDateTime.now());
             lemmaParser.run(site);
@@ -97,9 +97,9 @@ public class SiteIndex implements Runnable {
 
     private void indexingWords() throws InterruptedException {
         if (!Thread.interrupted()) {
-            var site = siteRepository.findByUrl(url);
+            var site = siteRepository.getSiteByUrl(url);
             indexParser.run(site);
-            List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(indexParser.getIndexList());
+            List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(indexParser.getIndexDtoList());
             List<Index> indexList = new CopyOnWriteArrayList<>();
             for (IndexDto indexDto : indexDtoList) {
                 if (!Thread.interrupted()) {
@@ -107,7 +107,9 @@ public class SiteIndex implements Runnable {
                     var lemma = lemmaRepository.getReferenceById(indexDto.lemmaID());
                     site.setStatusTime(LocalDateTime.now());
                     indexList.add(new Index(page, lemma, indexDto.rank()));
-                } else throw new InterruptedException();
+                } else {
+                    throw new InterruptedException();
+                }
             }
             indexRepository.saveAll(indexList);
             log.info("Индексация завершена - " + url);
@@ -122,7 +124,7 @@ public class SiteIndex implements Runnable {
     private void saveToBase(List<PageDto> pages) throws InterruptedException {
         if (!Thread.interrupted()) {
             List<Page> pageList = new CopyOnWriteArrayList<>();
-            var site = siteRepository.findByUrl(url);
+            var site = siteRepository.getSiteByUrl(url);
             for (PageDto page : pages) {
                 var start = page.url().indexOf(url) + url.length();
                 var pageFormat = page.url().substring(start);

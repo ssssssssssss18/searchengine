@@ -2,6 +2,7 @@ package searchengine.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import searchengine.config.SiteConfigList;
 import searchengine.model.Status;
@@ -36,6 +37,7 @@ public class IndexServiceImpl implements IndexService {
         if (isIndexingActive()) {
             return false;
         } else {
+            log.info("Начинаем индексацию");
             executorService = Executors.newFixedThreadPool(processorCoreCount);
             siteConfigList.getSites().forEach(site -> executorService.submit(createSiteIndexInstance(site.getUrl())));
             executorService.shutdown();
@@ -57,12 +59,14 @@ public class IndexServiceImpl implements IndexService {
 
     @Override
     public boolean indexPage(String url) {
-        if (urlCheck(url)) {
+        if (StringUtils.isNotEmpty(url) && urlCheck(url)) {
+            log.info("Начинаем индексацию по url: {}", url);
             executorService = Executors.newFixedThreadPool(processorCoreCount);
             executorService.submit(createSiteIndexInstance(url));
             executorService.shutdown();
             return true;
         } else {
+            log.error("Пустая ссылка или ссылка не прошла проверку: {}", url);
             return false;
         }
     }

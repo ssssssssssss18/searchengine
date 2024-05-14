@@ -2,6 +2,7 @@ package searchengine.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import searchengine.dto.SearchDto;
 import searchengine.model.Index;
@@ -9,7 +10,6 @@ import searchengine.model.Lemma;
 import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.morphology.Morphology;
-import searchengine.repository.FieldRepository;
 import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
@@ -33,13 +33,17 @@ import java.util.stream.Collectors;
 public class SearchServiceImpl implements SearchService {
     private final Morphology morphology;
     private final LemmaRepository lemmaRepository;
-    private final FieldRepository fieldRepository;
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
     private final IndexRepository indexRepository;
 
+    @Value("${title-selector}")
+    private String TITLE_SELECTOR;
+    @Value("${body-selector}")
+    private String BODY_SELECTOR;
+
     @Override
-    public List<SearchDto> allSiteSearch(String searchText, int offset, int limit) {
+    public List<SearchDto> searchAllSites(String searchText, int offset, int limit) {
         log.info("Получаем инфомацию по поиску \"" + searchText + "\"");
         var siteList = siteRepository.findAll();
         List<SearchDto> result = new ArrayList<>();
@@ -62,7 +66,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public List<SearchDto> siteSearch(String searchText, String url, int offset, int limit) {
         log.info("Получаем информацию по поиску \"" + searchText + "\" с сайта - " + url);
-        var site = siteRepository.findByUrl(url);
+        var site = siteRepository.getSiteByUrl(url);
 
         var textLemmaList = getLemmaFromText(searchText);
         var foundLemmaList = getLemmaListFromSite(textLemmaList, site);
@@ -94,20 +98,16 @@ public class SearchServiceImpl implements SearchService {
     }
 
     private String getSnippet(String content, List<String> lemmaList) {
-        List<Integer> lemmaIndex = new ArrayList<>();
-        StringBuilder result = new StringBuilder();
-        for (String lemma : lemmaList) {
-            lemmaIndex.addAll(morphology.findLemmaIndexInText(content, lemma));
-        }
-        Collections.sort(lemmaIndex);
+        var lemmaIndex = lemmaList.stream()
+                .flatMap(lemma -> morphology.findLemmaIndexInText(content, lemma).stream())
+                .sorted()
+                .toList();
+
         var wordsList = getWordsFromContent(content, lemmaIndex);
-        for (int i = 0; i < wordsList.size(); i++) {
-            result.append(wordsList.get(i)).append("... ");
-            if (i > 5) {
-                break;
-            }
-        }
-        return result.toString();
+
+        return wordsList.stream()
+                .limit(6) // Ограничиваем количество слов до 6
+                .collect(Collectors.joining("... "));
     }
 
     private List<String> getWordsFromContent(String content, List<Integer> lemmaIndex) {
@@ -131,7 +131,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     private String getWordsFromIndex(int start, int end, String content) {
-        String word = content.substring(start, end);
+        var word = content.substring(start, end);
         int prevPoint;
         int lastPoint;
         if (content.lastIndexOf(" ", start) != -1) {
@@ -144,7 +144,7 @@ public class SearchServiceImpl implements SearchService {
         } else {
             lastPoint = content.indexOf(" ", end);
         }
-        String text = content.substring(prevPoint, lastPoint);
+        var text = content.substring(prevPoint, lastPoint);
         try {
             text = text.replaceAll(word, "<b>" + word + "</b>");
         } catch (Exception e) {
@@ -171,7 +171,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     private LinkedHashMap<Page, Float> getPageAbsRelevance(List<Page> pageList, List<Index> indexList) {
-        HashMap<Page, Float> pageWithRelevance = new HashMap<>();
+        Map<Page, Float> pageWithRelevance = new HashMap<>();
         for (Page page : pageList) {
             float relevant = 0;
             for (Index index : indexList) {
@@ -181,7 +181,7 @@ public class SearchServiceImpl implements SearchService {
             }
             pageWithRelevance.put(page, relevant);
         }
-        HashMap<Page, Float> pageWithAbsRelevance = new HashMap<>();
+        Map<Page, Float> pageWithAbsRelevance = new HashMap<>();
         for (Page page : pageWithRelevance.keySet()) {
             float absRelevant = pageWithRelevance.get(page) / Collections.max(pageWithRelevance.values());
             pageWithAbsRelevance.put(page, absRelevant);
@@ -194,22 +194,21 @@ public class SearchServiceImpl implements SearchService {
 
     private List<SearchDto> getSearchData(LinkedHashMap<Page, Float> pageList, List<String> textLemmaList) {
         List<SearchDto> result = new ArrayList<>();
-        var fieldList = fieldRepository.findAll();
         for (Page page : pageList.keySet()) {
             var uri = page.getPath();
             var content = page.getContent();
             var pageSite = page.getSite();
-            var site = pageSite.getUrl();
+            var siteUrl = pageSite.getUrl();
             var siteName = pageSite.getName();
             var absRelevance = pageList.get(page);
 
             StringBuilder clearContent = new StringBuilder();
-            var title = ClearHtmlCode.clear(content, fieldList.get(0).getSelector());
-            var body = ClearHtmlCode.clear(content, fieldList.get(1).getSelector());
+            var title = ClearHtmlCode.clear(content, TITLE_SELECTOR);
+            var body = ClearHtmlCode.clear(content, BODY_SELECTOR);
             clearContent.append(title).append(" ").append(body);
             var snippet = getSnippet(clearContent.toString(), textLemmaList);
 
-            result.add(new SearchDto(site, siteName, uri, title, snippet, absRelevance));
+            result.add(new SearchDto(siteUrl, siteName, uri, title, snippet, absRelevance));
         }
         return result;
     }

@@ -20,6 +20,7 @@ import java.util.List;
 public class Site extends AbstractEntity {
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private Status status;
 
     @Column(name = "status_time")
@@ -28,8 +29,10 @@ public class Site extends AbstractEntity {
     @Column(name = "last_error")
     private String lastError;
 
+    @Column(name = "url")
     private String url;
 
+    @Column(name = "name")
     private String name;
 
     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL)

@@ -6,18 +6,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import searchengine.dto.responce.StatisticResponse;
-import searchengine.services.StatisticsService;
+import searchengine.dto.responce.StatisticsResponse;
+import searchengine.services.StatisticService;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class StatisticController {
-    private final StatisticsService statisticService;
+    private final StatisticService statisticService;
 
     @GetMapping("/statistics")
-    public ResponseEntity<Object> getStatistic() {
+    public ResponseEntity<Object> getStatistics() {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(new StatisticResponse(true, statisticService.getStatistic()));
+                .body(new StatisticsResponse(true, statisticService.getStatistics()));
     }
 }

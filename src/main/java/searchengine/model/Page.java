@@ -18,12 +18,13 @@ import java.util.List;
 @Setter
 public class Page extends AbstractEntity {
 
+    @Column(name = "path")
     private String path;
 
     @Column(name = "status_code")
     private int statusCode;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
     @ManyToOne

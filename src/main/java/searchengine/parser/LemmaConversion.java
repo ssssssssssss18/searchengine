@@ -2,13 +2,12 @@ package searchengine.parser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import searchengine.dto.LemmaDto;
-import searchengine.model.Field;
 import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.morphology.Morphology;
-import searchengine.repository.FieldRepository;
 import searchengine.repository.PageRepository;
 import searchengine.utils.ClearHtmlCode;
 
@@ -22,10 +21,14 @@ import java.util.Set;
 @Component
 @RequiredArgsConstructor
 public class LemmaConversion implements LemmaParser {
-    private final PageRepository pageRepository;
-    private final FieldRepository fieldRepository;
-    private final Morphology morphology;
     private List<LemmaDto> lemmaDtoList;
+    @Value("${title-selector}")
+    private String TITLE_SELECTOR;
+    @Value("${body-selector}")
+    private String BODY_SELECTOR;
+
+    private final PageRepository pageRepository;
+    private final Morphology morphology;
 
     @Override
     public List<LemmaDto> getLemmaDtoList() {
@@ -37,13 +40,11 @@ public class LemmaConversion implements LemmaParser {
         lemmaDtoList = new ArrayList<>();
         List<Page> pageList = pageRepository.findBySite(site);
         log.info("pageList: " + pageList);
-        List<Field> fieldList = fieldRepository.findAll();
-        log.info("fieldList: " + fieldList);
         HashMap<String, Integer> lemmaList = new HashMap<>();
         for (Page page : pageList) {
             var content = page.getContent();
-            var title = ClearHtmlCode.clear(content, fieldList.get(0).getSelector());
-            var body = ClearHtmlCode.clear(content, fieldList.get(1).getSelector());
+            var title = ClearHtmlCode.clear(content, TITLE_SELECTOR);
+            var body = ClearHtmlCode.clear(content, BODY_SELECTOR);
             var titleList = morphology.getLemmaList(title);
             var bodyList = morphology.getLemmaList(body);
 

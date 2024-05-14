@@ -16,12 +16,15 @@ import javax.persistence.Table;
 @Setter
 @Table(name = "word_index")
 public class Index extends AbstractEntity {
+
     @ManyToOne
     @JoinColumn(name = "page_id")
     private Page page;
+
     @ManyToOne
     @JoinColumn(name = "lemma_id")
     private Lemma lemma;
+
     @Column(name = "word_rank")
     private Float wordRank;
 

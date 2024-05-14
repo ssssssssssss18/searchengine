@@ -1,9 +1,13 @@
 package searchengine.utils;
 
+import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+@UtilityClass
 public class RandomUserAgent {
     private static final Map<String, String[]> uaMap = new HashMap<>();
     private static final Map<String, Double> freqMap = new HashMap<>();
@@ -1659,7 +1663,7 @@ public class RandomUserAgent {
             }
         }
 
-        if (browser == null) {
+        if (StringUtils.isEmpty(browser)) {
             browser = "Chrome";
         }
 

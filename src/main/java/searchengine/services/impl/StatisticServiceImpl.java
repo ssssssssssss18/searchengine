@@ -9,19 +9,19 @@ import searchengine.model.Site;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
-import searchengine.services.StatisticsService;
+import searchengine.services.StatisticService;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class StatisticsServiceImpl implements StatisticsService {
+public class StatisticServiceImpl implements StatisticService {
     private final SiteRepository siteRepository;
     private final PageRepository pageRepository;
     private final LemmaRepository lemmaRepository;
 
     @Override
-    public Statistics getStatistic() {
+    public Statistics getStatistics() {
         var total = getTotal();
         var detailed = getDetailedList();
         return new Statistics(total, detailed);
@@ -40,7 +40,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         var statusTime = site.getStatusTime();
         var error = site.getLastError();
         var pages = pageRepository.countBySite(site);
-        var lemmas = lemmaRepository.countBySite(site);
+        var lemmas = lemmaRepository.countLemmasBySite(site);
         return new Detailed(url, name, status, statusTime, error, pages, lemmas);
     }
 

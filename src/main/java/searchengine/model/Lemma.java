@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -16,8 +17,13 @@ import java.util.List;
 @Getter
 @Setter
 public class Lemma extends AbstractEntity {
+
+    @Column(name = "lemma")
     private String lemma;
+
+    @Column(name = "frequency")
     private int frequency;
+
     @ManyToOne
     @JoinColumn(name = "site_id")
     private Site site;

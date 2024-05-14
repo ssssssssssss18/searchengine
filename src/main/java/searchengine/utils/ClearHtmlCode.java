@@ -1,7 +1,9 @@
 package searchengine.utils;
 
+import lombok.experimental.UtilityClass;
 import org.jsoup.Jsoup;
 
+@UtilityClass
 public class ClearHtmlCode {
 
     public static String clear(String content, String selector) {
